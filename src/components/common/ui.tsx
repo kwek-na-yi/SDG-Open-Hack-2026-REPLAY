@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { AlertTriangle, Check, Cpu, Info, X } from 'lucide-react'
 import type { PortfolioItem } from '../../data/demo-account'
 import { garmentMock, profileOf } from '../../lib/ideas'
@@ -44,6 +44,7 @@ export function SimTag({ children = 'Prototype simulation' }: { children?: React
 }
 
 export function Modal({ open, onClose, title, children, size }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; size?: 'lg' }) {
+  const titleId = useId()
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -53,9 +54,9 @@ export function Modal({ open, onClose, title, children, size }: { open: boolean;
   if (!open) return null
   return (
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={`modal ${size === 'lg' ? 'modal-lg' : ''}`} role="dialog" aria-modal="true">
+      <div className={`modal ${size === 'lg' ? 'modal-lg' : ''}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <div className="modal-head">
-          <div className="card-title" style={{ fontSize: 15 }}>
+          <div id={titleId} className="card-title" style={{ fontSize: 15 }}>
             {title}
           </div>
           <button className="icon-btn" onClick={onClose} aria-label="Close">

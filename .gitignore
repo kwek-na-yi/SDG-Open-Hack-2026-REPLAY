@@ -7,10 +7,9 @@ dist/
 .vite/
 coverage/
 
-# Environment files (keep only the documented example)
+# Environment files — never committed; variables are documented in README.md
 .env
 .env.*
-!.env.example
 
 # Deployment
 .vercel/

@@ -161,9 +161,9 @@ export default function Landing() {
                 <h3 style={{ fontSize: 20 }}>{c.h}</h3>
                 <p className="muted">{c.p}</p>
                 {c.to && (
-                  <span className="link small row" style={{ gap: 6, marginTop: 'auto' }}>
+                  <Link to={c.to} className="link small row" style={{ gap: 6, marginTop: 'auto' }} onClick={(e) => e.stopPropagation()}>
                     {c.cta} <ArrowRight size={13} />
-                  </span>
+                  </Link>
                 )}
               </div>
             ))}

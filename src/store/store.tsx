@@ -513,9 +513,12 @@ function useStoreValue() {
     return true
   }
 
+  /** Only items still in the owner's hands can be resold or returned — never credit the same item twice. */
+  const inHand = (i: PortfolioItem | undefined): i is PortfolioItem => !!i && (i.status === 'owned' || i.status === 'transformed')
+
   const resellItem = (itemId: string) => {
     const item = state.portfolio.find((i) => i.id === itemId)
-    if (!item) return
+    if (!inHand(item)) return
     const net = Math.round((item.current * 0.9 - DELIVERY_FEE) * 100) / 100
     setState((s) => {
       let n = updateItem(s, itemId, { status: 'sold' })
@@ -528,7 +531,7 @@ function useStoreValue() {
 
   const returnItem = (itemId: string) => {
     const item = state.portfolio.find((i) => i.id === itemId)
-    if (!item) return
+    if (!inHand(item)) return
     setState((s) => {
       let n = updateItem(s, itemId, { status: 'returned' })
       n = addTx(n, { label: 'Return', detail: `${item.name} returned — guaranteed value`, amount: item.guaranteed, kind: 'return' })
@@ -674,7 +677,7 @@ function useStoreValue() {
   const sellTransformed = (itemId: string) => {
     const t = state.transformations[itemId]
     const item = state.portfolio.find((i) => i.id === itemId)
-    if (!t || !item) return
+    if (!t || item?.status !== 'transformed') return
     const { idea } = t
     setState((s) => {
       let n = updateItem(s, itemId, { status: 'sold' })
@@ -687,7 +690,8 @@ function useStoreValue() {
   }
 
   const withdraw = (amount: number) => {
-    if (amount <= 0 || amount > balance) {
+    // Written so NaN is rejected too.
+    if (!(amount > 0 && amount <= balance)) {
       toast({ title: 'Invalid amount', tone: 'error' })
       return
     }

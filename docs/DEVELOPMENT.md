@@ -9,11 +9,10 @@
 
 ```bash
 npm install
-cp .env.example .env.local
 npm run dev            # http://localhost:5180
 ```
 
-Fill in `.env.local` with your project's values (Supabase dashboard → **Project Settings → API**):
+To connect Supabase, create `.env.local` in the project root with your project's values (Supabase dashboard → **Project Settings → API**). The file is git-ignored; no environment files are committed to this repository.
 
 ```dotenv
 VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
@@ -27,7 +26,7 @@ If the keys are missing, `supabaseConfigured` is `false`. The public pages still
 1. Create a project at [supabase.com](https://supabase.com).
 2. Open **SQL Editor → New query**, paste the contents of `supabase/schema.sql`, and run it. This creates the `profiles` and `listings` tables, their row-level security policies, the sign-up trigger, the `buy_listings()` function, the `listing-images` storage bucket and the realtime publication. The script is idempotent, so it is safe to run again after changes.
 3. Optional, for instant sign-up: **Authentication → Sign In / Providers → Email**, turn off **Confirm email**. If you leave it on, new users must click the emailed link before they can sign in; the app handles both cases.
-4. Copy the project URL and anon key into `.env.local` (and into Vercel for deployments).
+4. Put the project URL and anon key in `.env.local` (and in Vercel for deployments).
 
 Only the anon key belongs in the client. The `service_role` key bypasses row-level security and must never be added to a `VITE_` variable.
 
@@ -70,7 +69,7 @@ UI flows are not covered by automated tests. When changing them, check the main 
 
 ## Deploying
 
-Vercel builds the project with `npm run build` and serves `dist/` with an SPA rewrite (`vercel.json`). Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for both the Production and Preview environments, then deploy with `vercel --prod` or through the Vercel GitHub integration.
+Vercel builds the project with `npm run build` and serves `dist/` with an SPA rewrite (`vercel.json`). Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for both the Production and Preview environments (Project → Settings → Environment Variables). Deploy a preview with `vercel`, check it, then promote with `vercel --prod`; or connect the GitHub repository to the Vercel project for automatic deployments.
 
 ## Troubleshooting
 

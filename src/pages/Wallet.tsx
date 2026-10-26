@@ -109,10 +109,10 @@ export default function WalletPage() {
         <div className="stack gap12">
           <p className="muted small">Simulated transfer to DBS ••• 4821. No real money moves in this prototype.</p>
           <div className="field">
-            <label>
+            <label htmlFor="withdraw-amount">
               Amount <span className="muted">max {sgd(balance, 2)}</span>
             </label>
-            <input className="input" type="number" min={0} step="0.01" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus />
+            <input id="withdraw-amount" className="input" type="number" min={0} step="0.01" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus />
           </div>
           <div className="row" style={{ justifyContent: 'flex-end' }}>
             <button className="btn btn-outline" onClick={() => setAmount(String(balance))}>
