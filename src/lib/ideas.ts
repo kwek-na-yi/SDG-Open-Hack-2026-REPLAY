@@ -5,8 +5,8 @@
  * transformation ideas. Deterministic: the same garment + filters + refresh
  * count always produce the same ideas, so the demo is repeatable offline.
  */
-import type { Shape, MockSpec } from '../components/ProductMock'
-import { DELIVERY_FEE } from './data'
+import type { Shape, MockSpec } from './mock'
+import { DELIVERY_FEE } from './orders'
 import type { Category, Material } from './engine'
 
 export type ProductType = 'Bag' | 'Skirt' | 'Top' | 'Jacket' | 'Dress' | 'Accessories' | 'Home / Lifestyle' | 'Other'

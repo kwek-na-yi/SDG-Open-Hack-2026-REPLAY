@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight, Compass, Fingerprint, RotateCcw, Sparkles, Tag } from 'lucide-react'
-import { CountUp, ItemVisual, LifeScore, Modal, ProductImage, SimTag, sgd } from '../components/ui'
-import { PRODUCTS, DELIVERY_FEE, DELIVERY_LABEL, type PortfolioItem } from '../lib/data'
-import { useStore } from '../lib/store'
+import { CountUp, ItemVisual, LifeScore, Modal, ProductImage, SimTag } from '../components/common/ui'
+import { sgd } from '../lib/format'
+import { PRODUCTS } from '../data/catalog'
+import { DELIVERY_FEE, DELIVERY_LABEL } from '../lib/orders'
+import type { PortfolioItem } from '../data/demo-account'
+import { useStore } from '../store/store'
 import { firstName } from '../lib/account'
 
 function greeting() {
@@ -52,7 +55,8 @@ function ItemActionModal({ mode, onClose }: { mode: 'sell' | 'return' | null; on
           disabled={!item}
           onClick={() => {
             if (!item) return
-            mode === 'sell' ? resellItem(item.id) : returnItem(item.id)
+            if (mode === 'sell') resellItem(item.id)
+            else returnItem(item.id)
             close()
           }}
         >
@@ -224,7 +228,7 @@ export default function ConsumerDashboard() {
       <div className="row between mt32" style={{ marginBottom: 14 }}>
         <div>
           <h2 style={{ fontSize: 20 }}>Your Circular Portfolio</h2>
-          <div className="small muted">{active.length} items · values re-estimated by the AI Value Engine daily</div>
+          <div className="small muted">{active.length} items · values estimated by the RE:PLAY valuation model</div>
         </div>
         <Link to="/passport" className="link small">
           All Life Passports →

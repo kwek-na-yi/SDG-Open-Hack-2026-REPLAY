@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
 import { Check, Minus, Sparkles } from 'lucide-react'
-import { PageHead, sgd } from '../components/ui'
-import { PlusBadge, PricingTable } from '../components/Studio'
+import { PageHead } from '../components/common/ui'
+import { sgd } from '../lib/format'
+import { PlusBadge, PricingTable } from '../components/studio/StudioPanels'
 import { DELIVERY_NOTE, PLUS_PRICE, PLUS_TAGLINE } from '../lib/studio'
-import { useStore } from '../lib/store'
+import { useStore } from '../store/store'
 
 const FEATURES: [string, boolean][] = [
   ['Basic AI transformation ideas', true],

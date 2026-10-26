@@ -6,7 +6,7 @@
  * sits on the body. Deterministic and offline: no image-generation service.
  * It is an illustrative estimate, never an exact representation of anyone's body.
  */
-import type { Shape } from '../components/ProductMock'
+import type { Shape } from './mock'
 
 export type ModelType = 'female' | 'male' | 'neutral'
 export type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
@@ -30,7 +30,7 @@ export const MODEL_TYPES: { id: ModelType; label: string }[] = [
 export const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 /** Accepted ranges (cm). Wide on purpose — bodies vary; this only catches typos. */
-export const LIMITS: Record<Measure, [number, number]> = {
+const LIMITS: Record<Measure, [number, number]> = {
   height: [130, 210],
   bust: [60, 160],
   waist: [45, 160],

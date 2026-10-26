@@ -1,12 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Bookmark, Eye, History, LogOut, Pencil, Plus, RotateCcw, Ruler, ShoppingBag, Tag, Trash2, User } from 'lucide-react'
-import { HistorySection, SavedDesignsSection } from '../components/Designs'
-import FitFields, { FitSummary, type FitErrors } from '../components/FitFields'
-import { ItemVisual, PageHead, ProductImage, sgd } from '../components/ui'
-import { EMAIL_RE, MIN_PASSWORD, firstName, initials, type Listing } from '../lib/account'
+import { HistorySection, SavedDesignsSection } from '../components/studio/Designs'
+import FitFields, { FitSummary, type FitErrors } from '../components/fit/FitFields'
+import { ItemVisual, PageHead, PageLoading, ProductImage } from '../components/common/ui'
+import { sgd } from '../lib/format'
+import { EMAIL_RE, MIN_PASSWORD, firstName, initials, safeRedirect } from '../lib/account'
+import type { Listing } from '../lib/listings'
 import { draftOf, validateFit, type FitDraft } from '../lib/fit'
-import { useStore } from '../lib/store'
+import { useStore } from '../store/store'
 
 /* ------------------------------------------------------------------ */
 /* Signed out: sign in / create account                                */
@@ -31,7 +33,8 @@ function AuthPanel({ onSignedIn }: { onSignedIn: (dest: string) => void }) {
 
   const switchMode = (m: 'signin' | 'signup') => {
     const p = new URLSearchParams(params)
-    m === 'signup' ? p.set('mode', 'signup') : p.delete('mode')
+    if (m === 'signup') p.set('mode', 'signup')
+    else p.delete('mode')
     setParams(p, { replace: true })
     setErrors({})
     setPassword('')
@@ -61,7 +64,7 @@ function AuthPanel({ onSignedIn }: { onSignedIn: (dest: string) => void }) {
       setConfirm('')
       return
     }
-    onSignedIn(next && next.startsWith('/') ? next : mode === 'signup' ? '/discover' : '/account')
+    onSignedIn(safeRedirect(next) ?? (mode === 'signup' ? '/discover' : '/account'))
   }
 
   const field = (id: keyof AuthErrors, label: string, input: JSX.Element) => (
@@ -146,14 +149,6 @@ function AuthPanel({ onSignedIn }: { onSignedIn: (dest: string) => void }) {
           </p>
         </div>
       </div>
-    </div>
-  )
-}
-
-export function LoadingAccount() {
-  return (
-    <div className="container page empty" aria-busy="true">
-      Loading your account…
     </div>
   )
 }
@@ -436,7 +431,7 @@ export default function Account() {
     if (user && dest) nav(dest, { replace: true })
   }, [user, dest]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!ready || (dest && !user)) return <LoadingAccount />
+  if (!ready || (dest && !user)) return <PageLoading label="Loading your account…" />
   if (!user) return <AuthPanel onSignedIn={setDest} />
 
   return (

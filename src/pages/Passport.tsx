@@ -1,9 +1,10 @@
 import { Fragment } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowRight, Fingerprint, QrCode } from 'lucide-react'
-import { ProductMock } from '../components/ProductMock'
-import { CountUp, LifeScore, PageHead, ProductImage, SimTag, sgd } from '../components/ui'
-import { useStore } from '../lib/store'
+import { ProductMock } from '../components/product/ProductMock'
+import { CountUp, LifeScore, PageHead, ProductImage, SimTag } from '../components/common/ui'
+import { sgd } from '../lib/format'
+import { useStore } from '../store/store'
 
 export function PassportIndex() {
   const { state } = useStore()

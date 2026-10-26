@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Check, LogIn, Pencil, ShieldCheck, ShoppingBag, Sparkles, Truck } from 'lucide-react'
-import { CountUp, ItemVisual, LifeScore, ProductImage, SimTag, sgd } from '../components/ui'
-import { DELIVERY_FEE, DELIVERY_LABEL, orderTotals, valuate } from '../lib/data'
-import { useStore } from '../lib/store'
+import { CountUp, ItemVisual, LifeScore, ProductImage, SimTag } from '../components/common/ui'
+import { sgd } from '../lib/format'
+import { DELIVERY_FEE, DELIVERY_LABEL, orderTotals } from '../lib/orders'
+import { valuate } from '../data/catalog'
+import { useStore } from '../store/store'
 
 const ANALYSIS = ['Confirming your payment', 'Grading condition from the seller’s photos', 'Pricing resale, transformation & material value', 'Finding its highest-value next life']
 
@@ -11,7 +13,7 @@ export default function Buy() {
   const { id } = useParams()
   const [params, setParams] = useSearchParams()
   const nav = useNavigate()
-  const { state, user, balance, buyProduct, addToCart, keepItem, setRole, findProduct } = useStore()
+  const { state, user, balance, buyProduct, addToCart, keepItem, findProduct } = useStore()
   const product = findProduct(id)
   const mine = !!user && product?.sellerId === user.id
   const unavailable = !!product?.listingStatus && product.listingStatus !== 'active'
@@ -138,7 +140,7 @@ export default function Buy() {
                   </div>
                   <span className="small" style={{ color: '#A68BC9' }}>A free RE:PLAY account keeps your purchases, listings and fit profile together.</span>
                 </div>
-              ) : state.role === 'consumer' ? (
+              ) : (
                 <div className="stack gap8">
                   <div className="row wrap" style={{ gap: 12 }}>
                     <button className="btn btn-lg btn-accent" onClick={pay} disabled={paying}>
@@ -158,10 +160,6 @@ export default function Buy() {
                     Paid from RE:PLAY Cash · balance {sgd(balance, 2)} · {sgd(DELIVERY_FEE, 2)} delivery is charged once per order — add more items to your bag, still {sgd(DELIVERY_FEE, 2)}.
                   </span>
                 </div>
-              ) : (
-                <button className="btn btn-lg btn-light" style={{ alignSelf: 'flex-start' }} onClick={() => setRole('consumer')}>
-                  Switch to Consumer to buy
-                </button>
               )}
               {owned && <p className="tiny" style={{ color: '#A68BC9' }}>You already own one of these — it’s in your collection.</p>}
             </div>

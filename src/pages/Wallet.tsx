@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowDownLeft, ArrowUpRight, Banknote, Plus, Repeat, ShoppingBag, Sparkles, Trophy, Wand2 } from 'lucide-react'
-import { CountUp, Modal, PageHead, SimTag, sgd } from '../components/ui'
-import type { WalletTx } from '../lib/data'
-import { useStore } from '../lib/store'
+import { CountUp, Modal, PageHead, SimTag } from '../components/common/ui'
+import { sgd } from '../lib/format'
+import type { WalletTx } from '../data/demo-account'
+import { useStore } from '../store/store'
 
 const ICONS: Record<WalletTx['kind'], typeof Banknote> = {
   return: Repeat,
@@ -27,7 +28,6 @@ export default function WalletPage() {
     { l: 'Returns', v: earnings.filter((t) => t.kind === 'return').reduce((s, t) => s + t.amount, 0) },
     { l: 'Resale', v: earnings.filter((t) => t.kind === 'resale').reduce((s, t) => s + t.amount, 0) },
     { l: 'Creator & transformation', v: earnings.filter((t) => t.kind === 'creator' || t.kind === 'transform').reduce((s, t) => s + t.amount, 0) },
-    { l: 'Challenges', v: earnings.filter((t) => t.kind === 'challenge').reduce((s, t) => s + t.amount, 0) },
   ]
   const maxSrc = Math.max(1, ...bySource.map((b) => b.v))
 

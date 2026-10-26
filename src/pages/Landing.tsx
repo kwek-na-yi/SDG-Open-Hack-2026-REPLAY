@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, Building2, Palette, ShoppingBag } from 'lucide-react'
-import LoopVisual from '../components/LoopVisual'
-import { CountUp, SimTag, sgd } from '../components/ui'
+import LoopVisual from '../components/landing/LoopVisual'
+import { CountUp, SimTag } from '../components/common/ui'
+import { sgd } from '../lib/format'
 import { allocateInventory, CHANNEL_COLORS, CHANNEL_TEXT } from '../lib/engine'
 
 const DEMO_BATCH = allocateInventory({ originalPrice: 40, condition: 0.85, category: 'shirt', demand: 0.7, material: 'cotton', age: 0.5, brand: 'NOVAWEAR', inventoryQuantity: 10000 })

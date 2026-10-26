@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Plus, SlidersHorizontal, Truck } from 'lucide-react'
-import ProductCard from '../components/ProductCard'
-import { PageHead, SimTag, sgd } from '../components/ui'
-import { KINDS, DELIVERY_FEE, DELIVERY_LABEL, kindOf, valuate, type Kind, type Product } from '../lib/data'
-import { useStore } from '../lib/store'
+import ProductCard from '../components/product/ProductCard'
+import { PageHead, SimTag } from '../components/common/ui'
+import { sgd } from '../lib/format'
+import { KINDS, kindOf, valuate, type Kind, type Product } from '../data/catalog'
+import { DELIVERY_FEE, DELIVERY_LABEL } from '../lib/orders'
+import { useStore } from '../store/store'
 
 type Sort = 'featured' | 'price-asc' | 'price-desc' | 'discount' | 'transform'
 const SORTS: { id: Sort; label: string }[] = [
@@ -43,7 +45,10 @@ export default function Discover() {
   const items = sortItems(kind ? inTab.filter((p) => kindOf(p) === kind) : inTab, SORTS.some((x) => x.id === sort) ? sort : 'featured')
   const update = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params)
-    for (const [k, v] of Object.entries(patch)) v ? next.set(k, v) : next.delete(k)
+    for (const [k, v] of Object.entries(patch)) {
+      if (v) next.set(k, v)
+      else next.delete(k)
+    }
     setParams(next, { replace: true })
   }
 

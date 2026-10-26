@@ -1,13 +1,15 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Check, ImagePlus, RefreshCw, Sparkles, Truck } from 'lucide-react'
-import ProductCard from '../components/ProductCard'
-import { PageHead, SimTag, sgd } from '../components/ui'
-import { CATEGORY_OPTIONS, CONDITIONS, MATERIAL_OPTIONS, estimateOriginal, handleOf, listingToProduct, type ConditionId, type Listing, type ListingInput } from '../lib/account'
-import { DELIVERY_FEE, DELIVERY_LABEL, valuate } from '../lib/data'
+import ProductCard from '../components/product/ProductCard'
+import { PageHead, PageLoading, SimTag } from '../components/common/ui'
+import { sgd } from '../lib/format'
+import { handleOf } from '../lib/account'
+import { CATEGORY_OPTIONS, CONDITIONS, MATERIAL_OPTIONS, estimateOriginal, listingToProduct, type ConditionId, type Listing, type ListingInput } from '../lib/listings'
+import { DELIVERY_FEE, DELIVERY_LABEL } from '../lib/orders'
+import { valuate } from '../data/catalog'
 import type { Category, Material } from '../lib/engine'
-import { useStore } from '../lib/store'
-import { LoadingAccount } from './Account'
+import { useStore } from '../store/store'
 
 const MAX_UPLOAD_MB = 15
 
@@ -162,7 +164,7 @@ export default function Sell() {
     nav('/discover')
   }
 
-  if (params.get('edit') && !editing && !listingsReady) return <LoadingAccount />
+  if (params.get('edit') && !editing && !listingsReady) return <PageLoading label="Loading your listing…" />
   if (params.get('edit') && !editing) {
     return (
       <div className="container page empty">

@@ -7,8 +7,8 @@
  * Everything here is deterministic and offline: garment measurements are estimated from the listing's
  * category and size, and feasibility is a rule-based AI *estimate* — never a professional tailoring assessment.
  */
-import type { MockSpec, Shape } from '../components/ProductMock'
-import { DELIVERY_FEE } from './data'
+import type { MockSpec, Shape } from './mock'
+import { DELIVERY_FEE } from './orders'
 import type { Category } from './engine'
 import type { FitProfile } from './fit'
 import { allIdeas, type GarmentProfile, type Idea, type Style } from './ideas'
@@ -187,8 +187,8 @@ export interface AlterChange {
   amount: number
 }
 
-export const signed = (c: AlterChange) => (c.dir === 'decrease' ? -c.amount : c.amount)
-export const fmtCm = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(Math.round(n * 10) / 10)} cm`
+const signed = (c: AlterChange) => (c.dir === 'decrease' ? -c.amount : c.amount)
+const fmtCm = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(Math.round(n * 10) / 10)} cm`
 export const changeLabel = (c: AlterChange) => `${AREA_DEFS[c.area].short}: ${fmtCm(signed(c))}`
 
 /** Garment measurements after the requested changes. */
@@ -444,7 +444,7 @@ export function upcycleFields(idea: Idea, body: FitProfile, fit: FitPref): SpecF
   }
 }
 
-export const fieldValue = (fields: SpecField[], key: string) => fields.find((x) => x.key === key)?.value
+const fieldValue = (fields: SpecField[], key: string) => fields.find((x) => x.key === key)?.value
 
 /** Validates a measurement field. Returns an error message, or null. */
 export function fieldError(raw: string, f: SpecField): string | null {
@@ -606,8 +606,8 @@ const DESC: Record<string, string> = {
   lanyard: 'A braided lanyard from laces and straps.',
 }
 
-export const modsOf = (idea: Idea) => MODS[idea.id] ?? ['Deconstruct the garment', 'Cut new pattern pieces', 'Assemble and finish']
-export const descOf = (idea: Idea) => DESC[idea.id] ?? `Turn it into a ${idea.title.toLowerCase()}.`
+const modsOf = (idea: Idea) => MODS[idea.id] ?? ['Deconstruct the garment', 'Cut new pattern pieces', 'Assemble and finish']
+const descOf = (idea: Idea) => DESC[idea.id] ?? `Turn it into a ${idea.title.toLowerCase()}.`
 
 /** Silhouette character of each idea, for matching the user's fit preference. */
 const IDEA_FIT: Record<string, FitPref> = {
@@ -770,7 +770,7 @@ export interface Design {
   updatedAt: string
 }
 
-export const bodyLine = (b: FitProfile | null, source: string) =>
+const bodyLine = (b: FitProfile | null, source: string) =>
   b ? `${source} — height ${b.height} cm · bust ${b.bust} · waist ${b.waist} · hips ${b.hips} cm` : 'No body profile — sizes from the garment label'
 
 export function alterSpec(p: GarmentProfile, item: string, m: GarmentMeasures, changes: AlterChange[], feas: Feasibility, notes: string, body: FitProfile | null, bodySource: string): MakerSpec {
@@ -852,3 +852,18 @@ export function alterIdea(p: GarmentProfile, changes: AlterChange[], mock: MockS
 
 /** Delivery is charged once per order and never mixed into transformation prices. */
 export const DELIVERY_NOTE = `Item price and S$${DELIVERY_FEE.toFixed(2)} Singapore Local Delivery (once per order) are charged at checkout — separate from alteration fees and RE:PLAY+.`
+
+/* ------------------------------------------------------------------ */
+/* Whose measurements a preview uses                                   */
+/* ------------------------------------------------------------------ */
+
+export interface BodyChoice {
+  body: FitProfile | null
+  source: 'saved' | 'temporary' | 'none'
+}
+
+export const bodyLabelOf = (c: BodyChoice) => (c.source === 'saved' ? 'Your saved measurements' : c.source === 'temporary' ? 'Temporary measurements' : 'Sample model')
+/** The body the previews use — a clearly labelled sample if the user hasn't given one. */
+export const previewBody = (c: BodyChoice) => c.body ?? SAMPLE_BODY
+
+export const initialBody = (saved: FitProfile | null): BodyChoice => (saved ? { body: saved, source: 'saved' } : { body: null, source: 'none' })

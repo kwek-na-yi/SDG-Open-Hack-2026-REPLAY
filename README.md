@@ -1,59 +1,180 @@
-# RE:PLAY — Circular Value Engine (hackathon prototype)
+# RE:PLAY
 
-Turn unwanted products into profitable opportunities. RE:PLAY values surplus stock across resale, marketplace listings, creator transformation and material recovery, then routes each unit to its highest-value next life.
+**A circular fashion marketplace prototype: buy pre-owned clothing, see what it could be worth in its next life, then alter, upcycle or resell it.**
 
-## Run
+Built for SDG Open Hack 2026. Live demo: **[replay-beryl-nu.vercel.app](https://replay-beryl-nu.vercel.app)**
 
-```bash
-npm install
-npm run dev        # http://localhost:5180
+![RE:PLAY transformation ideas for a pair of second-hand jeans](docs/screenshots/transform-ideas.png)
+
+## Overview
+
+Second-hand clothing is usually valued only at its resale price, so most of it is discounted, liquidated or thrown away. RE:PLAY explores a different model: every garment is valued across several possible "next lives" (resale, transformation into a new product, or material recovery), and the user is shown concrete, priced ways to realise that value.
+
+The app is a working front end with real accounts and a shared marketplace backed by Supabase. Valuations, transformation ideas, fit previews, maker matching and all money movements are **deterministic simulations** designed for a repeatable demo (see [Implementation notes](#implementation-notes-and-limitations)).
+
+## Key features
+
+- **Marketplace (Discover).** Browse seeded pre-owned products and items listed by real users, filtered by type and sorted by price, discount or transformation value. Delivery is a flat S$2.99 per order, however many items it holds.
+- **Sell an item.** Upload a photo, set a price and condition, preview the listing card, and publish it. Photos go to Supabase Storage. Purchases claim listings atomically, so an item cannot be sold twice.
+- **Bag and checkout.** Multi-item orders paid from a simulated RE:PLAY Cash wallet, with an itemised receipt.
+- **Valuation.** Each item gets resale, transformation and material-recovery estimates from a deterministic formula (condition, demand, age, category, material, brand).
+- **Transform: UPCYCLE.** Exactly three transformation ideas per garment (e.g. jeans → tote, mini skirt, shorts), each with estimated sale price, making cost, delivery and profit. Ideas can be refreshed and filtered by type, style, difficulty, budget and profit, and the closest alternatives are labelled when filters can't be met.
+- **Transform: ALTER.** Pick alteration areas (hem, waist, hips, etc.), enter amounts in cm, get a rule-based feasibility check, a price (S$6 per area) and a maker-ready specification.
+- **Fit preview.** An SVG model built from the user's height, bust, waist and hips shows where a transformed piece would sit. Measurements are optional and are stored only if the user saves them.
+- **RE:PLAY+ (demo tier).** Personalised concepts, a 2D flat sketch and a canvas-rendered 3D preview that update as measurements change, plus saved designs and transformation history. It unlocks instantly; no payment is taken.
+- **Life Passport.** A timeline of each item's lives (original purchase → resale → transformation → projected material recovery).
+- **Wallet and dashboard.** Portfolio value, next-life potential, earnings by source and a transaction history. Top-ups and withdrawals are simulated.
+- **Responsive.** Mobile layout with a bottom tab bar.
+
+## Screenshots
+
+| Discover | Dashboard |
+| --- | --- |
+| ![Discover marketplace](docs/screenshots/discover.png) | ![Consumer dashboard](docs/screenshots/dashboard.png) |
+| **ALTER studio** | **Life Passport** |
+| ![Alteration studio](docs/screenshots/transform-alter.png) | ![Product Life Passport](docs/screenshots/passport.png) |
+
+<details>
+<summary>More screenshots: landing page, wallet, mobile</summary>
+
+| Landing | Wallet | Mobile |
+| --- | --- | --- |
+| ![Landing page](docs/screenshots/landing.png) | ![Wallet](docs/screenshots/wallet.png) | ![Mobile Discover](docs/screenshots/mobile-discover.png) |
+
+</details>
+
+## Technology stack
+
+| Area | Tools |
+| --- | --- |
+| Front end | React 18, TypeScript (strict), React Router 7 |
+| Build | Vite 6 |
+| Backend-as-a-service | Supabase: Auth, Postgres with row-level security, Storage, Realtime |
+| Graphics | Hand-written SVG (product and fit visuals) and Canvas 2D (low-poly 3D preview); no 3D library |
+| Icons | lucide-react |
+| Quality | ESLint 9 (typescript-eslint, react-hooks), Vitest 4 |
+| Hosting | Vercel (static SPA) |
+
+## System architecture
+
+```mermaid
+flowchart LR
+  subgraph Browser["Browser — React SPA"]
+    Pages["pages/*<br/>route components"] --> Components["components/*<br/>UI by feature"]
+    Pages --> Store["store/<br/>StoreProvider + useStore"]
+    Components --> Store
+    Pages --> Lib["lib/*<br/>pure domain logic"]
+    Store --> Lib
+    Store --> Data["data/*<br/>seed catalogue & demo account"]
+  end
+  Store -- "auth, profiles, listings, photos" --> Supabase[("Supabase<br/>Auth · Postgres · Storage · Realtime")]
 ```
 
-No API keys or backend needed. All values are simulated and stored in `localStorage`, so they survive a refresh. To start over, open the avatar menu and choose **Reset demo data**.
+- **`lib/`** holds the domain logic as pure, deterministic TypeScript functions with no React: valuation, the idea engine, fit model, alteration pricing and feasibility, and order maths. This is the layer the unit tests cover.
+- **`store/`** is a single React context. It owns the signed-in session, the per-account state (wallet, owned items, passports, bag, designs), every user action, and synchronisation with Supabase: debounced saves, realtime updates from other devices, and refresh on tab focus.
+- **Supabase** stores each account's state as a JSON document in its `profiles` row, plus a shared `listings` table. Row-level security limits writes to the owner, and the `buy_listings()` database function claims listings atomically.
 
-## 3-minute judge demo
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for data flow, module responsibilities and the database model.
 
-1. **Brand problem.** Click **For Business** in the top bar, then **Analyse Inventory**. The AI Value Engine builds the Value Map: **S$126,000** recovered, against S$58,000 from liquidation (**+S$68,000**). Click **Apply recommended allocation**.
-2. **Consumer discovery.** Go to **Discover** and open the pre-owned **Levi's Denim Jacket**. Checkout shows S$25 + S$2.99 Singapore Local Delivery = S$27.99. Click **Pay**, the AI analyses the jacket, and the reveal shows RE:PLAY value S$63 with two choices: **KEEP** (adds it to your collection) or **TRANSFORM**.
-3. **Make money.** Click **TRANSFORM**. The AI suggests 3 ideas, each with its own image, price, cost, profit and a "Why this?" note. Click **Refresh ideas** for 3 new ones, or **Filter** by product type, style, difficulty, budget or profit. **Select** the Patchwork Mini Skirt and click **Try it on · AI Fit Preview**, pick a sample profile (or enter height, bust, waist and hips) and **Generate fit preview** to see the skirt on a model built from those measurements. Then **Proceed with transformation** (S$10). The ledger shows S$25 item + S$2.99 delivery to you + S$10 making + S$2.99 delivery to buyer = S$40.98 invested; sold for S$63 = **+S$22.02 profit**.
-4. **Close the loop.** Click **Open Life Passport** to see Life 01 → 02 → 03 → 04.
+## Project structure
 
-## Structure
+```text
+├── docs/                 Architecture and development guides, screenshots
+├── public/               Static assets served as-is (favicon)
+├── src/
+│   ├── App.tsx           Routes, auth guard, lazy-loaded pages
+│   ├── main.tsx          Entry point: router, store provider, global styles
+│   ├── pages/            One component per route
+│   ├── components/
+│   │   ├── common/       Shared primitives (modal, toasts, images, page header)
+│   │   ├── layout/       App shell: header, tab bar, profile menu
+│   │   ├── product/      Product card and SVG product renderer
+│   │   ├── transform/    Upcycle idea cards, filters, cost ledger
+│   │   ├── studio/       ALTER / UPCYCLE studios, 2D and 3D previews, saved designs
+│   │   ├── fit/          Measurement form, fit model and preview
+│   │   └── landing/      Landing-page animation
+│   ├── lib/              Domain logic and helpers (with *.test.ts)
+│   ├── data/             Seed catalogue and starting demo account
+│   ├── store/            App state, Supabase sync and actions
+│   ├── services/         Supabase client
+│   └── styles/           Global and feature stylesheets
+├── supabase/schema.sql   Tables, RLS policies, purchase function, storage bucket
+├── vercel.json           SPA rewrite and build settings
+└── vite.config.ts
+```
 
-- `src/lib/engine.ts` — `calculateCircularValue()`, `allocateInventory()` (Value Map). Deterministic formulas, no randomness.
-- `src/lib/ideas.ts` — transformation recommendation engine: garment profile → exactly 3 ideas, with refresh paging, filters and filter relaxation.
-- `src/components/ProductMock.tsx` — local SVG product visuals drawn in the garment's own fabric and colour, so idea images never break.
-- `src/lib/data.ts` — mock brands, products, creators, passports, wallet, challenges.
-- `src/lib/fit.ts` — AI Fit Preview body model: measurement validation, size estimate, body landmarks, where each idea is worn. `src/components/FitModel.tsx` draws the model (SVG, offline); `src/components/FitPreview.tsx` is the try-on panel.
-- `src/pages/Bag.tsx` — bag/checkout for multi-item orders. Singapore Local Delivery is a flat **S$2.99 per order** (`DELIVERY_FEE` / `orderTotals()` in `src/lib/data.ts`), never per item.
-- `src/lib/store.tsx` — app state, all demo actions, and `localStorage` persistence.
-- `src/pages/*` — Landing, Consumer dashboard, Discover, Buy (checkout + reveal), AI Value Engine, Creator marketplace, Transformation, Life Passport, Wallet, Profit Challenge.
+## Getting started
 
-## Transform: ALTER, UPCYCLE & RE:PLAY+
+**Prerequisites:** Node.js 20 or newer and npm.
 
-**Transform** on any owned item first asks: **✂ ALTER — Make it fit me** or **♻ UPCYCLE — Give it a new life**.
+```bash
+git clone https://github.com/kwek-na-yi/SDG-Open-Hack-2026-REPLAY.git
+cd SDG-Open-Hack-2026-REPLAY
+npm install
+cp .env.example .env.local   # then add your Supabase URL and anon key
+npm run dev                  # http://localhost:5180
+```
 
-- **ALTER** (free): pick a direction and one or more areas (length/hem, waist, chest, hips, sleeves, leg opening — depending on the garment), enter the cm, get an **AI feasibility estimate**, a price of **S$6 per alteration area**, and a maker-ready specification. Confirming pays the fee from RE:PLAY Cash and runs the maker pipeline; the garment comes back to you and the change is added to its Life Passport.
-- **UPCYCLE** (free): the existing 3 AI ideas, then AI-generated measurements from your saved body profile (or temporary ones — *Save as my profile* is opt-in), manual adjustment, feasibility and a maker-ready spec.
-- **RE:PLAY+** (S$9.90/month, `/plus`): personalised, trend-aware concepts (style + preferred fit), a 2D flat sketch and a 3D on-body preview that update live as you change measurements, **Save Design**, and **Account → Saved Designs / Transformation History**. In this prototype **Try RE:PLAY+ demo** unlocks it instantly — no payment is taken.
+Without Supabase keys the app still starts: the landing page, Discover, product pages and RE:PLAY+ work on seeded data, and the sign-in page explains that accounts aren't connected. Signed-in features need a Supabase project; setup takes about five minutes and is described in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#supabase-setup).
 
-Code: `src/lib/studio.ts` (pricing, garment measurements, feasibility, concepts, trends, specs), `src/components/AlterStudio.tsx`, `src/components/UpcycleStudio.tsx`, `src/components/Studio.tsx` (shared UI), `src/components/GarmentFlat.tsx` (2D, SVG), `src/components/Garment3D.tsx` (3D: a low-poly mesh drawn on a canvas — no 3D library), `src/components/Designs.tsx`, `src/pages/Plus.tsx`. Trend signals and maker matching are simulated and labelled as such.
+## Environment configuration
 
-## Accounts, selling & fit profile (Supabase)
+| Variable | Description |
+| --- | --- |
+| `VITE_SUPABASE_URL` | Supabase project URL (`https://<project>.supabase.co`) |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon / publishable key |
 
-Accounts, profiles and listings are stored in **Supabase**, so the same account works on every device.
+Both values are bundled into the client, which is how Supabase is designed to work: data access is enforced by the row-level security policies in `supabase/schema.sql`, not by keeping the key secret. Never put a `service_role` key in these variables. `.env.local` is git-ignored.
 
-**Setup**
-1. Create a Supabase project, open **SQL Editor**, paste `supabase/schema.sql` and **Run**. This creates the `profiles` and `listings` tables, their row-level security rules, the `buy_listings()` purchase function, the `listing-images` storage bucket and realtime.
-2. For instant sign-up, turn off **Authentication → Sign In / Providers → Email → Confirm email**. If you leave it on, new users have to click a confirmation link before they can sign in.
-3. Copy `.env.example` to `.env.local` and fill in **Project URL** and the **anon public** key (Project Settings → API). Add the same two variables to Vercel (Production + Preview).
+## Available scripts
 
-**What lives where**
-- `profiles` (one row per account, owner-only): name, body measurements, the reminder preference and the account's demo data (wallet, purchases, passports, bag). Saved about 0.6 s after every change and pulled in live (realtime + on tab focus) on other devices.
-- `listings` (public to read, seller-only to edit): items users sell. Photos are stored in the `listing-images` bucket. Buying calls `buy_listings()`, which claims the item atomically so it can't be sold twice.
-- Code: `src/lib/supabase.ts` (client), `src/lib/store.tsx` (auth, sync, listings, checkout), `src/lib/account.ts` (types and row mapping), `src/pages/Account.tsx`, `src/pages/Sell.tsx`.
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Vite dev server on port 5180 |
+| `npm run build` | Type-check and build the production bundle into `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `npm run typecheck` | Run the TypeScript compiler without emitting |
+| `npm run lint` | Lint all TypeScript with ESLint |
+| `npm test` | Run the unit tests once (Vitest) |
+| `npm run test:watch` | Run the tests in watch mode |
 
-**Features**
-- **Account**: sign in, or create an account with name, email and password. Personalised pages (Dashboard, Bag, Wallet, Transform, Passports, Challenges, Sell) require you to be signed in.
-- **Sell an Item** (top bar and Discover): photo + name + S$ price, preview on the real marketplace card, then **List Item**. Manage your items in **Account → My Listings**.
-- **Body Measurements**: optional popup after sign-in, always editable in **Account → Body Measurements**. The AI Fit Preview uses the saved profile, or temporary measurements that are only saved if you tick **Save as my profile**. Measurements never appear on listings.
+## Implementation notes and limitations
+
+**Real**
+
+- Email/password accounts (Supabase Auth). Each profile, including body measurements and the account's demo state, syncs across devices in real time.
+- User listings with photo upload, edit, remove and relist, shared live between all visitors.
+- Atomic purchase of user listings via the `buy_listings()` Postgres function.
+
+**Simulated or mocked**
+
+- **All money.** RE:PLAY Cash, top-ups, withdrawals, purchases, maker fees and RE:PLAY+ are demo balances. No payment provider is integrated.
+- **"AI" features.** Garment analysis, valuations, transformation ideas, feasibility checks and trend signals are deterministic, rule-based TypeScript functions. There is no machine-learning model or external AI API, and the UI labels these as simulated.
+- **Fit and 3D previews** are illustrative drawings derived from a few measurements, not body scans or image generation.
+- **Makers, deliveries and transformation progress** are simulated; no real orders are placed.
+- **Seeded catalogue.** Products, starting wallet, owned items and passports are static data in `src/data/`. Product photos are hot-linked from Unsplash.
+- **Landing-page metrics** (S$1.2M recovered, etc.) are illustrative and labelled as prototype figures.
+
+**Known limitations**
+
+- The per-account demo state is written by the client, so a user could edit their own simulated balance. That is acceptable for a demo but would need server-side validation before any real money were involved.
+- Sold listings keep `buyer_id` visible to public reads.
+- There are unit tests for the domain logic but no automated end-to-end tests. UI flows were verified manually and with a scripted headless-browser pass.
+
+## Deployment
+
+The app is deployed to Vercel as a static single-page application:
+
+- `vercel.json` sets the framework to Vite, runs `npm run build`, serves `dist/`, and rewrites all paths to `index.html` so client-side routes work on refresh.
+- `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are configured in the Vercel project for Production and Preview.
+- The database is provisioned once by running `supabase/schema.sql` in the Supabase SQL editor; the script is idempotent.
+
+Deploy manually with the Vercel CLI (`vercel --prod`), or connect the GitHub repository to the Vercel project for automatic deployments.
+
+## Future improvements
+
+- Move money-affecting actions (purchases, payouts, maker fees) into Postgres functions or edge functions so balances are authoritative on the server.
+- Integrate a payment provider in test mode for checkout and RE:PLAY+.
+- Add end-to-end tests (e.g. Playwright) for sign-up, selling, checkout and the transform flow, and run lint, tests and build in CI.
+- Store transactions and passports in their own tables instead of one JSON document per profile.
+- Replace hot-linked product photos with self-hosted, optimised images.

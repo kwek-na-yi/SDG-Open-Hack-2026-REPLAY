@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Check, ShieldCheck, ShoppingBag, Sparkles, Trash2, Truck } from 'lucide-react'
-import { PageHead, ProductImage, SimTag, sgd } from '../components/ui'
-import { DELIVERY_FEE, DELIVERY_LABEL, orderTotals, type Product } from '../lib/data'
-import { useStore } from '../lib/store'
+import { PageHead, ProductImage, SimTag } from '../components/common/ui'
+import { sgd } from '../lib/format'
+import { DELIVERY_FEE, DELIVERY_LABEL, orderTotals } from '../lib/orders'
+import type { Product } from '../data/catalog'
+import { useStore } from '../store/store'
 
 interface Placed {
   lines: { product: Product; itemId: string }[]
@@ -41,7 +43,7 @@ function Summary({ count, subtotal, delivery, total, children }: { count: number
 }
 
 export default function Bag() {
-  const { state, balance, buyOrder, removeFromCart, setRole, findProduct } = useStore()
+  const { state, balance, buyOrder, removeFromCart, findProduct } = useStore()
   const [placed, setPlaced] = useState<Placed | null>(null)
   const products = state.cart.map(findProduct).filter((p): p is Product => !!p && (!p.listingStatus || p.listingStatus === 'active'))
   const { subtotal, delivery, total } = orderTotals(products.map((p) => p.price))
@@ -130,18 +132,10 @@ export default function Bag() {
             </Link>
           </div>
           <Summary count={products.length} subtotal={subtotal} delivery={delivery} total={total}>
-            {state.role === 'consumer' ? (
-              <>
-                <button className="btn btn-accent btn-lg btn-block" onClick={checkout} disabled={paying}>
-                  <ShieldCheck size={16} /> Pay {sgd(total, 2)}
-                </button>
-                <div className="tiny muted">Paid from RE:PLAY Cash · balance {sgd(balance, 2)}</div>
-              </>
-            ) : (
-              <button className="btn btn-primary btn-block" onClick={() => setRole('consumer')}>
-                Switch to Consumer to buy
-              </button>
-            )}
+            <button className="btn btn-accent btn-lg btn-block" onClick={checkout} disabled={paying}>
+              <ShieldCheck size={16} /> Pay {sgd(total, 2)}
+            </button>
+            <div className="tiny muted">Paid from RE:PLAY Cash · balance {sgd(balance, 2)}</div>
           </Summary>
         </div>
       )}

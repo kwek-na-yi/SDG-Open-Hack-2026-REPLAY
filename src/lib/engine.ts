@@ -104,7 +104,7 @@ const clamp = (v: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v))
 const round = (v: number) => Math.round(v)
 const roundTo = (v: number, step: number) => Number((Math.round(v / step) * step).toFixed(2))
 
-export function brandPremium(brand?: string) {
+function brandPremium(brand?: string) {
   return (brand && BRAND_PREMIUM[brand]) || 1
 }
 
@@ -180,7 +180,7 @@ export interface ValueMap {
   recoveryRate: number
 }
 
-export const CHANNEL_LABEL: Record<Channel, string> = {
+const CHANNEL_LABEL: Record<Channel, string> = {
   premium_resale: 'Premium resale',
   value_drop: 'Marketplace listings',
   creator_transformation: 'Creator transformation',
@@ -205,9 +205,9 @@ export function allocateInventory(input: ProductInput & { inventoryQuantity: num
   const condition = clamp(input.condition)
   const demand = clamp(input.demand)
 
-  let premiumShare = roundTo(0.336 * demand * condition, 0.05)
+  const premiumShare = roundTo(0.336 * demand * condition, 0.05)
   let dropShare = roundTo(0.2 + 0.15 * demand, 0.05)
-  let materialShare = roundTo(Math.max(0.05, (1 - condition) * 0.8 + 0.08), 0.05)
+  const materialShare = roundTo(Math.max(0.05, (1 - condition) * 0.8 + 0.08), 0.05)
   let creatorShare = 1 - premiumShare - dropShare - materialShare
   if (creatorShare < 0.05) {
     // Very worn stock: shrink listings first, then premium.
