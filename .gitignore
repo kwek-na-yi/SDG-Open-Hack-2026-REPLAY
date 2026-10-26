@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output and caches
+dist/
+*.tsbuildinfo
+.vite/
+coverage/
+
+# Environment files (keep only the documented example)
+.env
+.env.*
+!.env.example
+
+# Deployment
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor and OS clutter
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
